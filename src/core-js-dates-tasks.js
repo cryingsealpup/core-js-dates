@@ -59,7 +59,7 @@ function getTime(date) {
  * '2024-01-30T00:00:00.000Z' => 'Tuesday'
  */
 function getDayName(date) {
-  return weekDays[new Date(date).getDay()];
+  return weekDays[new Date(date).getUTCDay()];
 }
 
 /**
@@ -73,8 +73,17 @@ function getDayName(date) {
  * Date('2024-02-13T00:00:00Z') => Date('2024-02-16T00:00:00Z')
  * Date('2024-02-16T00:00:00Z') => Date('2024-02-23T00:00:00Z')
  */
-function getNextFriday(/* date */) {
-  throw new Error('Not implemented');
+function getNextFriday(date) {
+  const nextFriday = new Date(date.getTime());
+  nextFriday.setDate(nextFriday.getUTCDate() + 1);
+  while (
+    nextFriday.toLocaleString('en-US', { weekday: 'long', timeZone: 'UTC' }) !==
+    'Friday'
+  ) {
+    nextFriday.setDate(nextFriday.getUTCDate() + 1);
+  }
+
+  return nextFriday;
 }
 
 /**
