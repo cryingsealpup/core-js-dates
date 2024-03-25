@@ -193,16 +193,15 @@ function formatDate(date) {
  * 1, 2024 => 8
  */
 function getCountWeekendsInMonth(month, year) {
-  const dateEnd = new Date(year, month + 1, 0);
-  let weekends = 0;
-  const runner = new Date(year, month, 1);
-  while (runner.getTime() <= dateEnd.getTime()) {
-    if (runner.getDay() === 0 || runner.getDay() === 1) {
-      weekends += 1;
+  const runner = new Date(year, month, 0);
+  let daysOff = 0;
+  for (let i = runner.getDate(); i > 0; i -= 1) {
+    if (!(runner.getDay() % 6)) {
+      daysOff += 1;
     }
-    runner.setDate(runner.getUTCDate() + 1);
+    runner.setDate(runner.getDate() - 1);
   }
-  return weekends;
+  return daysOff;
 }
 
 /**
@@ -239,8 +238,14 @@ function getWeekNumberByDate(date) {
  * Date(2024, 0, 13) => Date(2024, 8, 13)
  * Date(2023, 1, 1) => Date(2023, 9, 13)
  */
-function getNextFridayThe13th(/* date */) {
-  throw new Error('Not implemented');
+function getNextFridayThe13th(date) {
+  let runner = new Date(date.valueOf());
+
+  while (runner.getDay() !== 5 || runner.getDate() !== 13) {
+    runner = new Date(runner.getUTCFullYear(), runner.getUTCMonth() + 1, 13);
+  }
+
+  return runner;
 }
 
 /**
@@ -276,8 +281,36 @@ function getQuarter(date) {
  * { start: '01-01-2024', end: '15-01-2024' }, 1, 3 => ['01-01-2024', '05-01-2024', '09-01-2024', '13-01-2024']
  * { start: '01-01-2024', end: '10-01-2024' }, 1, 1 => ['01-01-2024', '03-01-2024', '05-01-2024', '07-01-2024', '09-01-2024']
  */
-function getWorkSchedule(/* period, countWorkDays, countOffDays */) {
-  throw new Error('Not implemented');
+function getWorkSchedule(period, countWorkDays, countOffDays) {
+  const schedule = [];
+  const range = {
+    start: new Date(period.start.split('-').reverse().join('-')),
+    end: new Date(period.end.split('-').reverse().join('-')),
+  };
+  const runner = new Date(range.start.valueOf());
+  const createChunk = (len) =>
+    Array.from({ length: len }, (v, k) => {
+      const date = new Date(runner.valueOf());
+      date.setDate(date.getDate() - k - 1);
+      const strings = {
+        day: `${date.getUTCDate()}`,
+        month: `${date.getUTCMonth() + 1}`,
+        year: `${date.getUTCFullYear()}`,
+      };
+      return `${strings.day.padStart(2, '0')}-${strings.month.padStart(2, '0')}-${strings.year.padStart(2, '0')}`;
+    });
+  for (
+    let i = runner.getDate();
+    runner <= range.end;
+    i += countOffDays + countWorkDays
+  ) {
+    runner.setDate(runner.getDate() + countWorkDays);
+    const temp = createChunk(countWorkDays);
+    const flag = runner > range.end ? [temp.reverse()[0]] : temp.reverse();
+    schedule.push(...flag);
+    runner.setDate(runner.getDate() + countOffDays);
+  }
+  return schedule;
 }
 
 /**
