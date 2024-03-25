@@ -139,8 +139,16 @@ function getCountDaysOnPeriod(dateStart, dateEnd) {
  * '2024-02-02', { start: '2024-02-02', end: '2024-03-02' } => true
  * '2024-02-10', { start: '2024-02-02', end: '2024-03-02' } => true
  */
-function isDateInPeriod(/* date, period */) {
-  throw new Error('Not implemented');
+function isDateInPeriod(date, period) {
+  const checkedDate = new Date(date);
+  const datePeriod = {
+    start: new Date(period.start),
+    end: new Date(period.end),
+  };
+  if (checkedDate < datePeriod.start || checkedDate > datePeriod.end) {
+    return false;
+  }
+  return true;
 }
 
 /**
@@ -184,8 +192,17 @@ function formatDate(date) {
  * 12, 2023 => 10
  * 1, 2024 => 8
  */
-function getCountWeekendsInMonth(/* month, year */) {
-  throw new Error('Not implemented');
+function getCountWeekendsInMonth(month, year) {
+  const dateEnd = new Date(year, month + 1, 0);
+  let weekends = 0;
+  const runner = new Date(year, month, 1);
+  while (runner.getTime() <= dateEnd.getTime()) {
+    if (runner.getDay() === 0 || runner.getDay() === 1) {
+      weekends += 1;
+    }
+    runner.setDate(runner.getUTCDate() + 1);
+  }
+  return weekends;
 }
 
 /**
